@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  mdcx:
+    image: stainless403/mdcx-fixed:latest
+    container_name: mdcx
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Shanghai
+      - PGID=1001
+      - PUID=1000
+      - WEB_LISTENING_PORT=5800
+      - VNC_LISTENING_PORT=5900
+      - MDCX_CONFIG_PATH=/mdcx-config
+    volumes:
+      - './mdcx-config:/mdcx-config'
+      - './mdcx-config/MDCx.config:/app/MDCx.config'
+      - './data:/config'
+      - './logs:/app/Log'
+    shm_size: '2g'
+    stdin_open: true
+    tty: true

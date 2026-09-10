@@ -1,0 +1,45 @@
+FROM ubuntu:24.04
+
+ENV TZ=Asia/Shanghai \
+    LANG=zh_CN.UTF-8 \
+    LC_ALL=zh_CN.UTF-8 \
+    DEBIAN_FRONTEND=noninteractive
+
+# 安装系统依赖 + CA 证书（彻底修复 SSL 问题）
+RUN apt-get update -qq && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    curl \
+    wget \
+    git \
+    python3.13 \
+    python3-pip \
+    python3-venv \
+    locales \
+    && update-ca-certificates \
+    && locale-gen zh_CN.UTF-8 \
+    && rm -rf /var/lib/apt/lists/*
+
+# 安装 uv
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+ENV PATH="/root/.local/bin:${PATH}"
+
+# 克隆 MDCX 源码
+RUN git clone https://github.com/Hazard804/mdcx.git /app/mdcx
+WORKDIR /app/mdcx
+
+# 修复 1: 修复 CA 证书问题（已通过 apt 安装解决）
+# 修复 2: 修复 prestige.py 第 91 行的异常处理
+# 在 _run 方法中添加 try/except 包裹 get_json 调用
+RUN sed -i 's/        page_data, error = await self.async_client.get_json(real_url)/        try:\n            page_data, error = await self.async_client.get_json(real_url)\n        except Exception as e:\n            raise CralwerException(f"详情页请求异常: {str(e)}")/' mdcx/crawlers/prestige.py
+
+# 验证修改
+RUN sed -n '85,100p' mdcx/crawlers/prestige.py
+
+# 安装 Python 依赖
+RUN uv sync --locked --all-extras --dev
+
+# 暴露端口
+EXPOSE 5800 5900
+
+# 启动命令
+CMD ["uv", "run", "python", "main.py"]

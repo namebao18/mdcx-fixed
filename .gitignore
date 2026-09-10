@@ -1,0 +1,8 @@
+# 配置和日志（通常应挂载外部卷）
+mdcx-config/
+data/
+logs/
+
+# 系统文件
+.DS_Store
+Thumbs.db

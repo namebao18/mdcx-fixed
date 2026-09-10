@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  mdcx:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.source
+    image: stainless403/mdcx-fixed:latest
+    container_name: mdcx
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Shanghai
+      - PGID=1001
+      - PUID=1000
+      - WEB_LISTENING_PORT=5800
+      - VNC_LISTENING_PORT=5900
+      - MDCX_CONFIG_PATH=/mdcx-config
+    volumes:
+      - '/vol1/1000/docker/mdcx/logs:/app/Log'
+      - '/vol1/1000/docker/mdcx/mdcx-config:/mdcx-config'
+      - '/vol1/1000/docker/mdcx/mdcx-config/MDCx.config:/app/MDCx.config'
+      - '/vol1/1000/docker/mdcx/data:/config'
+      - '/vol1/1000/docker/mdcx/actor_photo:/actor_photo'
+      - '/vol1/1000/docker/mdcx/actress:/actress'
+      - '/vol2/1000/1024:/vol2/1000/1024'
+    shm_size: '2g'
+    stdin_open: true
+    tty: true
